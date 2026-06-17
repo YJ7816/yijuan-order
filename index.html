@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>艺卷 · 新中式茶饮</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --primary: #b71c1c;
+      --primary-light: #e53935;
+      --gold: #f5c842;
+      --bg: #faf7f2;
+      --card: #ffffff;
+      --text: #2c2c2c;
+      --text-light: #888;
+      --border: #f0e6d6;
+    }
+    body {
+      font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      max-width: 420px;
+      margin: 0 auto;
+      padding-bottom: 80px;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, var(--primary) 0%, #d32f2f 100%);
+      color: #fff;
+      padding: 20px 16px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(183,28,28,0.3);
+    }
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--gold);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: bold;
+      color: var(--primary);
+    }
+    .brand-name {
+      font-size: 20px;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+    .brand-sub {
+      font-size: 11px;
+      opacity: 0.8;
+      letter-spacing: 1px;
+    }
+    .cart-btn {
+      position: relative;
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+    }
+    .cart-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: var(--gold);
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: bold;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .cart-badge.show { display: flex; }
+
+    /* Notice bar */
+    .notice-bar {
+      background: rgba(255,255,255,0.15);
+      margin: 10px 16px 0;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Category tabs */
+    .category-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 16px;
+      margin-top: 12px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .category-tabs::-webkit-scrollbar { display: none; }
+    .cat-tab {
+      flex-shrink: 0;
+      padding: 8px 16px;
+      font-size: 14px;
+      border: none;
+      background: none;
+      color: rgba(255,255,255,0.7);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .cat-tab.active {
+      color: #fff;
+      border-bottom-color: var(--gold);
+      font-weight: bold;
+    }
+
+    /* Menu section */
+    .section-title {
+      padding: 16px 16px 8px;
+      font-size: 16px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Product card */
+    .product-list { padding: 0 16px; }
+    .product-card {
+      background: var(--card);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 12px;
+      display: flex;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    }
+    .product-img {
+      width: 110px;
+      height: 110px;
+      background: #f5f5f5;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      position: relative;
+    }
+    .product-img .tag {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .product-info {
+      flex: 1;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .product-name {
+      font-size: 15px;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    .product-desc {
+      font-size: 12px;
+      color: var(--text-light);
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .product-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 8px;
+    }
+    .product-price {
+      color: var(--primary);
+      font-size: 17px;
+      font-weight: bold;
+    }
+    .product-price .symbol { font-size: 12px; }
+    .add-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: none;
+      background: var(--primary);
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s;
+    }
+    .add-btn:active { transform: scale(0.9); }
+
+    /* Cart panel */
+    .cart-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 200;
+    }
+    .cart-overlay.open { display: block; }
+    .cart-panel {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(100%);
+      width: 100%;
+      max-width: 420px;
+      background: #fff;
+      border-radius: 16px 16px 0 0;
+      z-index: 201;
+      transition: transform 0.3s ease;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .cart-panel.open { transform: translateX(-50%) translateY(0); }
+    .cart-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .cart-header h3 { font-size: 16px; }
+    .clear-cart {
+      background: none;
+      border: none;
+      color: var(--text-light);
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .cart-items {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 16px;
+    }
+    .cart-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #f5f5f5;
+      gap: 10px;
+    }
+    .cart-item-name { flex: 1; font-size: 14px; }
+    .cart-item-price {
+      color: var(--primary);
+      font-size: 14px;
+      font-weight: bold;
+      width: 60px;
+      text-align: right;
+    }
+    .qty-ctrl {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .qty-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1.5px solid var(--primary);
+      background: #fff;
+      color: var(--primary);
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .qty-num { font-size: 14px; font-weight: bold; min-width: 20px; text-align: center; }
+
+    .cart-footer {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .cart-total { font-size: 14px; }
+    .cart-total .amount {
+      font-size: 20px;
+      font-weight: bold;
+      color: var(--primary);
+    }
+    .submit-btn {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 10px 28px;
+      border-radius: 24px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .submit-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    /* Order form modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 300;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open {
+      display: flex;
+    }
+    .modal {
+      background: #fff;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 380px;
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 24px 20px;
+    }
+    .modal h3 {
+      font-size: 18px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .form-group {
+      margin-bottom: 14px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      color: var(--text-light);
+      margin-bottom: 6px;
+    }
+    .form-group input, .form-group textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+    }
+    .form-group input:focus, .form-group textarea:focus {
+      border-color: var(--primary);
+    }
+    .form-group textarea { resize: vertical; min-height: 60px; }
+    .modal-btns {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .modal-btns button {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-cancel {
+      background: #f5f5f5;
+      color: var(--text-light);
+    }
+    .btn-confirm {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    /* Success / Payment page */
+    .payment-page {
+      display: none;
+      text-align: center;
+      padding: 20px;
+    }
+    .payment-page.show { display: block; }
+    .payment-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .payment-order-no {
+      font-size: 13px;
+      color: var(--text-light);
+      margin-bottom: 4px;
+    }
+    .payment-order-no .no {
+      font-size: 16px;
+      font-weight: bold;
+      color: var(--primary);
+      letter-spacing: 1px;
+    }
+    .payment-total {
+      font-size: 28px;
+      font-weight: bold;
+      color: var(--primary);
+      margin: 8px 0 16px;
+    }
+    .payment-qr-box {
+      background: #f9f9f9;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 16px 0;
+    }
+    .payment-qr-box img, .payment-qr-placeholder {
+      width: 200px;
+      height: 200px;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+    .payment-qr-placeholder {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      border: 2px dashed #ddd;
+      color: #bbb;
+      font-size: 14px;
+      margin: 0 auto;
+    }
+    .payment-steps {
+      text-align: left;
+      font-size: 13px;
+      color: #666;
+      line-height: 2;
+      padding: 0 10px;
+    }
+    .payment-steps .step {
+      display: flex;
+      gap: 8px;
+      align-items: baseline;
+    }
+    .payment-steps .step-num {
+      background: var(--primary);
+      color: #fff;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      flex-shrink: 0;
+      margin-top: 3px;
+    }
+    .payment-note {
+      margin-top: 16px;
+      padding: 10px;
+      background: #fff8e1;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #f57c00;
+    }
+
+    /* Bottom bar */
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 420px;
+      background: #fff;
+      border-top: 1px solid var(--border);
+      padding: 10px 16px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 50;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    }
+    .bottom-bar.show { display: flex; }
+    .bottom-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .bottom-bar-total {
+      font-size: 14px;
+      color: var(--text-light);
+    }
+    .bottom-bar-total .amount {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--primary);
+    }
+
+    /* Hot badge */
+    .hot-badge {
+      display: inline-block;
+      background: linear-gradient(90deg, #ff6d00, #ff9100);
+      color: #fff;
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: 3px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    /* Decorative */
+    .header-deco {
+      text-align: center;
+      padding: 6px 0 0;
+      font-size: 11px;
+      opacity: 0.6;
+      letter-spacing: 2px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-top">
+    <div class="brand">
+      <div class="brand-icon">艺</div>
+      <div>
+        <div class="brand-name">艺卷</div>
+        <div class="brand-sub">新中式茶饮 · 匠心手作</div>
+      </div>
+    </div>
+    <button class="cart-btn" onclick="toggleCart()">
+      🛒 购物车
+      <span class="cart-badge" id="cartBadge">0</span>
+    </button>
+  </div>
+  <div class="notice-bar">📢 新人首单立减5元 · 满30元免费配送</div>
+  <div class="category-tabs" id="categoryTabs"></div>
+  <div class="header-deco">— 用心做好每一杯 —</div>
+</div>
+
+<!-- Menu -->
+<div id="menuContainer"></div>
+
+<!-- Bottom bar -->
+<div class="bottom-bar" id="bottomBar">
+  <div class="bottom-bar-left">
+    <span class="bottom-bar-total">合计：<span class="amount" id="bottomTotal">¥0</span></span>
+  </div>
+  <button class="submit-btn" onclick="toggleCart()">去结算</button>
+</div>
+
+<!-- Cart panel -->
+<div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+<div class="cart-panel" id="cartPanel">
+  <div class="cart-header">
+    <h3>🛒 我的购物车</h3>
+    <button class="clear-cart" onclick="clearCart()">清空</button>
+  </div>
+  <div class="cart-items" id="cartItems">
+    <div style="text-align:center;padding:40px 0;color:#ccc;">购物车是空的</div>
+  </div>
+  <div class="cart-footer">
+    <div class="cart-total">合计：<span class="amount" id="cartTotal">¥0</span></div>
+    <button class="submit-btn" onclick="openOrderForm()">提交订单</button>
+  </div>
+</div>
+
+<!-- Order form modal -->
+<div class="modal-overlay" id="orderModal">
+  <div class="modal">
+    <h3>确认订单</h3>
+    <div class="form-group">
+      <label>姓名</label>
+      <input type="text" id="orderName" placeholder="请输入您的姓名">
+    </div>
+    <div class="form-group">
+      <label>手机号</label>
+      <input type="tel" id="orderPhone" placeholder="请输入手机号">
+    </div>
+    <div class="form-group">
+      <label>收货地址</label>
+      <textarea id="orderAddress" placeholder="请输入详细地址"></textarea>
+    </div>
+    <div class="form-group">
+      <label>备注</label>
+      <textarea id="orderNote" placeholder="如：少冰、不加糖等"></textarea>
+    </div>
+    <div style="background:#f9f9f9;padding:10px;border-radius:8px;margin-bottom:14px;font-size:13px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+        <span>商品合计</span><span id="orderSubtotal">¥0</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-weight:bold;color:var(--primary);">
+        <span>应付总额</span><span id="orderTotal">¥0</span>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeOrderForm()">返回</button>
+      <button class="btn-confirm" onclick="submitOrder()">确认下单</button>
+    </div>
+  </div>
+</div>
+
+<!-- Payment Page -->
+<div class="payment-page" id="paymentPage">
+  <div class="payment-card">
+    <div class="payment-order-no">订单号 <span class="no" id="payOrderNo">---</span></div>
+    <div style="font-size:13px;color:var(--text-light);">微信/支付宝扫码付款</div>
+    <div class="payment-total" id="payTotal">¥0</div>
+    <div class="payment-qr-box">
+      <!-- 替换为你的个人收款码图片 -->
+      <div class="payment-qr-placeholder" id="payQR">
+        📱<br>上传收款码
+      </div>
+      <div style="font-size:12px;color:#999;margin-top:8px;">支持微信 / 支付宝扫码</div>
+    </div>
+    <div class="payment-steps">
+      <div class="step"><span class="step-num">1</span> 保存上方收款码，用微信/支付宝扫一扫</div>
+      <div class="step"><span class="step-num">2</span> 输入金额 <strong id="payAmountStep" style="color:var(--primary);">¥0</strong> 并付款</div>
+      <div class="step"><span class="step-num">3</span> 付款时备注订单号 <strong id="payNoStep" style="color:var(--primary);">---</strong></div>
+    </div>
+    <div class="payment-note">💡 付款后我们会尽快确认并开始制作，预计30分钟内送达</div>
+  </div>
+  <button class="submit-btn" onclick="location.reload()" style="padding:10px 32px;">继续点餐</button>
+</div>
+
+<script>
+  // ========== DATA ==========
+  const menuData = {
+    "人气茶饮": [
+      { id: 1, name: "伯牙绝弦", desc: "茉莉雪芽+鲜牛奶，经典中的经典", price: 18, icon: "🍵", hot: true, tag: "招牌" },
+      { id: 2, name: "桂馥兰香", desc: "桂花乌龙+鲜奶，香气四溢", price: 16, icon: "🏵️", hot: true, tag: "热卖" },
+      { id: 3, name: "去云南玫瑰", desc: "玫瑰红茶+鲜奶，浪漫滋味", price: 20, icon: "🌹", hot: false, tag: "" },
+      { id: 4, name: "赤狐鸣", desc: "红茶基底+芝士奶盖，浓郁醇厚", price: 19, icon: "🦊", hot: true, tag: "新品" },
+      { id: 5, name: "绿野仙踪", desc: "抹茶+鲜奶，清新自然", price: 17, icon: "🍃", hot: false, tag: "" },
+    ],
+    "手作寿司": [
+      { id: 6, name: "招牌三文鱼卷", desc: "新鲜三文鱼+寿司米，入口即化", price: 28, icon: "🍣", hot: true, tag: "招牌" },
+      { id: 7, name: "鳗鱼手握", desc: "碳烤鳗鱼+秘制酱汁，浓香四溢", price: 32, icon: "🐟", hot: true, tag: "热卖" },
+      { id: 8, name: "牛油果卷", desc: "进口牛油果+蟹肉，清爽健康", price: 22, icon: "🥑", hot: false, tag: "轻食" },
+      { id: 9, name: "天妇罗卷", desc: "炸虾天妇罗+紫薯，口感丰富", price: 26, icon: "🍤", hot: false, tag: "" },
+      { id: 10, name: "艺卷拼盘", desc: "三文鱼+鳗鱼+牛油果，三重享受", price: 48, icon: "🍱", hot: true, tag: "推荐" },
+      { id: 11, name: "玉子烧卷", desc: "日式厚蛋烧+寿司饭，甜香软糯", price: 18, icon: "🥚", hot: false, tag: "" },
+    ],
+    "低卡轻食": [
+      { id: 12, name: "波波沙拉碗", desc: "鸡胸肉+藜麦+时蔬，低脂高蛋白", price: 26, icon: "🥗", hot: true, tag: "健康" },
+      { id: 13, name: "三文鱼波奇碗", desc: "刺身三文鱼+牛油果+糙米饭", price: 35, icon: "🍚", hot: false, tag: "新品" },
+      { id: 14, name: "日式冷面", desc: "荞麦面+温泉蛋+秘制酱汁", price: 22, icon: "🍜", hot: false, tag: "" },
+    ],
+    "甜品小食": [
+      { id: 15, name: "大福（2粒）", desc: "草莓/抹茶口味，软糯Q弹", price: 12, icon: "🍡", hot: false, tag: "" },
+      { id: 16, name: "日式炸鸡", desc: "外酥里嫩，配上柠檬更解腻", price: 18, icon: "🍗", hot: true, tag: "下酒" },
+      { id: 17, name: "抹茶巴菲", desc: "宇治抹茶+红豆+白玉团子", price: 16, icon: "🍦", hot: false, tag: "甜品" },
+    ]
+  };
+
+  let cart = [];
+  let currentCategory = Object.keys(menuData)[0];
+
+  // ========== INIT ==========
+  function init() {
+    renderCategoryTabs();
+    renderMenu();
+  }
+
+  function renderCategoryTabs() {
+    const container = document.getElementById('categoryTabs');
+    container.innerHTML = '';
+    Object.keys(menuData).forEach(cat => {
+      const btn = document.createElement('button');
+      btn.className = 'cat-tab' + (cat === currentCategory ? ' active' : '');
+      btn.textContent = cat;
+      btn.onclick = () => {
+        currentCategory = cat;
+        renderCategoryTabs();
+        renderMenu();
+      };
+      container.appendChild(btn);
+    });
+  }
+
+  function renderMenu() {
+    const container = document.getElementById('menuContainer');
+    container.innerHTML = '';
+    Object.entries(menuData).forEach(([category, items]) => {
+      const title = document.createElement('div');
+      title.className = 'section-title';
+      title.innerHTML = `<span>${category}</span>`;
+      container.appendChild(title);
+
+      const list = document.createElement('div');
+      list.className = 'product-list';
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.innerHTML = `
+          <div class="product-img">
+            ${item.icon}
+            ${item.tag ? `<span class="tag">${item.tag}</span>` : ''}
+          </div>
+          <div class="product-info">
+            <div>
+              <div class="product-name">${item.name}${item.hot ? '<span class="hot-badge">🔥热卖</span>' : ''}</div>
+              <div class="product-desc">${item.desc}</div>
+            </div>
+            <div class="product-bottom">
+              <div class="product-price"><span class="symbol">¥</span>${item.price}</div>
+              <button class="add-btn" onclick="addToCart(${item.id})">+</button>
+            </div>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+      container.appendChild(list);
+    });
+  }
+
+  // ========== CART ==========
+  function addToCart(id) {
+    const allItems = Object.values(menuData).flat();
+    const item = allItems.find(i => i.id === id);
+    const exist = cart.find(c => c.id === id);
+    if (exist) {
+      exist.qty++;
+    } else {
+      cart.push({ ...item, qty: 1 });
+    }
+    updateCartUI();
+    // feedback
+    const btn = event.target;
+    btn.style.transform = 'scale(1.3)';
+    setTimeout(() => btn.style.transform = 'scale(1)', 150);
+  }
+
+  function removeFromCart(id) {
+    const exist = cart.find(c => c.id === id);
+    if (exist) {
+      exist.qty--;
+      if (exist.qty <= 0) cart = cart.filter(c => c.id !== id);
+    }
+    updateCartUI();
+  }
+
+  function clearCart() {
+    cart = [];
+    updateCartUI();
+  }
+
+  function updateCartUI() {
+    const totalQty = cart.reduce((s, c) => s + c.qty, 0);
+    const totalPrice = cart.reduce((s, c) => s + c.price * c.qty, 0);
+
+    const badge = document.getElementById('cartBadge');
+    badge.textContent = totalQty;
+    badge.classList.toggle('show', totalQty > 0);
+
+    document.getElementById('bottomBar').classList.toggle('show', totalQty > 0);
+    document.getElementById('bottomTotal').textContent = '¥' + totalPrice;
+
+    // render cart items
+    const container = document.getElementById('cartItems');
+    if (cart.length === 0) {
+      container.innerHTML = '<div style="text-align:center;padding:40px 0;color:#ccc;">购物车是空的</div>';
+    } else {
+      container.innerHTML = '';
+      cart.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'cart-item';
+        div.innerHTML = `
+          <div class="cart-item-name">${item.icon} ${item.name}</div>
+          <div class="qty-ctrl">
+            <button class="qty-btn" onclick="removeFromCart(${item.id})">−</button>
+            <span class="qty-num">${item.qty}</span>
+            <button class="qty-btn" onclick="addToCart(${item.id})">+</button>
+          </div>
+          <div class="cart-item-price">¥${item.price * item.qty}</div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    document.getElementById('cartTotal').textContent = '¥' + totalPrice;
+  }
+
+  function toggleCart() {
+    const overlay = document.getElementById('cartOverlay');
+    const panel = document.getElementById('cartPanel');
+    const isOpen = overlay.classList.contains('open');
+    if (isOpen) {
+      overlay.classList.remove('open');
+      panel.classList.remove('open');
+    } else {
+      overlay.classList.add('open');
+      panel.classList.add('open');
+    }
+  }
+
+  // ========== ORDER ==========
+  function openOrderForm() {
+    if (cart.length === 0) return;
+    const total = cart.reduce((s, c) => s + c.price * c.qty, 0);
+    document.getElementById('orderSubtotal').textContent = '¥' + total;
+    document.getElementById('orderTotal').textContent = '¥' + total;
+    document.getElementById('orderModal').classList.add('open');
+    toggleCart(); // close cart panel
+  }
+
+  function closeOrderForm() {
+    document.getElementById('orderModal').classList.remove('open');
+  }
+
+  async function submitOrder() {
+    const name = document.getElementById('orderName').value.trim();
+    const phone = document.getElementById('orderPhone').value.trim();
+    const address = document.getElementById('orderAddress').value.trim();
+    const note = document.getElementById('orderNote').value.trim();
+    if (!name || !phone || !address) {
+      alert('请填写完整信息');
+      return;
+    }
+    const btn = event.target;
+    btn.disabled = true;
+    btn.textContent = '提交中...';
+
+    const total = cart.reduce((s, c) => s + c.price * c.qty, 0);
+    const items = cart.map(c => ({ id: c.id, name: c.name, price: c.price, qty: c.qty }));
+
+    try {
+      const res = await fetch('/api/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, phone, address, note, items, total })
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error);
+
+      // Show payment page
+      document.getElementById('payOrderNo').textContent = data.order.order_no;
+      document.getElementById('payTotal').textContent = '¥' + total;
+      document.getElementById('payAmountStep').textContent = '¥' + total;
+      document.getElementById('payNoStep').textContent = data.order.order_no;
+
+      closeOrderForm();
+      document.querySelector('.header').style.display = 'none';
+      document.getElementById('menuContainer').style.display = 'none';
+      document.getElementById('bottomBar').classList.remove('show');
+      document.getElementById('paymentPage').classList.add('show');
+      cart = [];
+      updateCartUI();
+    } catch(err) {
+      alert('提交失败：' + err.message + '\n请重试或联系商家');
+      btn.disabled = false;
+      btn.textContent = '确认下单';
+    }
+  }
+
+  // Load payment QR code if provided
+  function loadPayQR(src) {
+    if (!src) return;
+    const placeholder = document.getElementById('payQR');
+    placeholder.innerHTML = `<img src="${src}" alt="收款码" style="width:200px;height:200px;object-fit:contain;border-radius:8px;">`;
+    placeholder.classList.remove('payment-qr-placeholder');
+  }
+  // 收款二维码
+  loadPayQR('qrcode.jpg');
+
+  init();
+</script>
+</body>
+</html>

@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>艺卷 · 订单管理</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #f5f5f5;
+      color: #333;
+      padding: 16px;
+    }
+    .header {
+      background: linear-gradient(135deg, #b71c1c, #d32f2f);
+      color: #fff;
+      margin: -16px -16px 16px;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header h1 { font-size: 18px; }
+    .header-actions { display: flex; gap: 8px; }
+    .header-actions button {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: 16px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .header-actions button.active { background: #f5c842; color: #b71c1c; font-weight: bold; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .stat-num { font-size: 24px; font-weight: bold; }
+    .stat-label { font-size: 12px; color: #999; margin-top: 4px; }
+    .stat-card.new .stat-num { color: #e53935; }
+    .stat-card.paid .stat-num { color: #f57c00; }
+    .stat-card.doing .stat-num { color: #1976d2; }
+    .stat-card.today .stat-num { color: #388e3c; }
+
+    .order-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      border-left: 4px solid #ddd;
+      cursor: pointer;
+    }
+    .order-card.new { border-left-color: #e53935; }
+    .order-card.paid { border-left-color: #f57c00; }
+    .order-card.cooking { border-left-color: #1976d2; }
+    .order-card.delivering { border-left-color: #9c27b0; }
+    .order-card.completed { border-left-color: #388e3c; opacity: 0.7; }
+    .order-card.cancelled { border-left-color: #999; opacity: 0.6; }
+
+    .order-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .order-no { font-weight: bold; font-size: 14px; }
+    .order-status {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+    .order-status.new { background: #ffebee; color: #e53935; }
+    .order-status.paid { background: #fff3e0; color: #f57c00; }
+    .order-status.cooking { background: #e3f2fd; color: #1976d2; }
+    .order-status.delivering { background: #f3e5f5; color: #9c27b0; }
+    .order-status.completed { background: #e8f5e9; color: #388e3c; }
+    .order-status.cancelled { background: #f5f5f5; color: #999; }
+
+    .order-mid { display: flex; gap: 12px; font-size: 13px; }
+    .order-name { font-weight: bold; }
+    .order-items { color: #666; }
+    .order-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+      font-size: 12px;
+      color: #999;
+    }
+    .order-price { font-size: 18px; font-weight: bold; color: #b71c1c; }
+
+    .empty { text-align: center; padding: 60px 20px; color: #ccc; }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #fff;
+      border-radius: 16px;
+      width: 92%;
+      max-width: 400px;
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 24px 20px;
+    }
+    .modal h3 { margin-bottom: 16px; font-size: 17px; }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #f5f5f5;
+      font-size: 14px;
+    }
+    .detail-row .label { color: #999; }
+    .detail-item {
+      padding: 6px 0;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .detail-items { margin: 8px 0 12px; }
+    .status-btns {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+    .status-btn {
+      flex: 1;
+      padding: 8px 4px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      background: #fff;
+      font-size: 12px;
+      cursor: pointer;
+      min-width: 60px;
+    }
+    .status-btn.active { background: #b71c1c; color: #fff; border-color: #b71c1c; }
+    .modal-close {
+      margin-top: 14px;
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      background: #f5f5f5;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .audio-btn {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: #fff;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    @media (max-width: 480px) {
+      .stats { grid-template-columns: 2fr 2fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🍵 艺卷 · 订单管理</h1>
+  <div class="header-actions">
+    <button class="audio-btn" id="audioBtn" onclick="toggleAudio()" title="新订单声音提醒">🔇</button>
+    <button onclick="refreshOrders()">🔄 刷新</button>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat-card new"><div class="stat-num" id="newCount">0</div><div class="stat-label">未处理</div></div>
+  <div class="stat-card paid"><div class="stat-num" id="paidCount">0</div><div class="stat-label">已付款</div></div>
+  <div class="stat-card doing"><div class="stat-num" id="doingCount">0</div><div class="stat-label">制作中/配送</div></div>
+  <div class="stat-card today"><div class="stat-num" id="todayCount">0</div><div class="stat-label">今日订单</div></div>
+</div>
+
+<div style="display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;">
+  <button class="status-filter active" data-status="" onclick="setFilter('')">全部</button>
+  <button class="status-filter" data-status="new" onclick="setFilter('new')">未处理</button>
+  <button class="status-filter" data-status="paid" onclick="setFilter('paid')">已付款</button>
+  <button class="status-filter" data-status="cooking" onclick="setFilter('cooking')">制作中</button>
+  <button class="status-filter" data-status="delivering" onclick="setFilter('delivering')">配送中</button>
+  <button class="status-filter" data-status="completed" onclick="setFilter('completed')">已完成</button>
+</div>
+
+<div id="orderList"></div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <h3>📋 订单详情</h3>
+    <div class="detail-row"><span class="label">订单号</span><span id="detNo"></span></div>
+    <div class="detail-row"><span class="label">客户</span><span id="detName"></span></div>
+    <div class="detail-row"><span class="label">电话</span><span id="detPhone"></span></div>
+    <div class="detail-row"><span class="label">地址</span><span id="detAddr"></span></div>
+    <div class="detail-row"><span class="label">备注</span><span id="detNote"></span></div>
+    <div class="detail-items" id="detItems"></div>
+    <div class="detail-row" style="font-weight:bold;font-size:16px;">
+      <span>合计</span><span style="color:#b71c1c;" id="detTotal"></span>
+    </div>
+    <div class="status-btns" id="statusBtns"></div>
+    <button class="modal-close" onclick="closeDetail()">关闭</button>
+  </div>
+</div>
+
+<script>
+  let orders = [];
+  let currentFilter = '';
+  let selectedOrder = null;
+  let audioEnabled = false;
+  let lastNewCount = 0;
+
+  const STATUS_MAP = {
+    new: '未处理', paid: '已付款', cooking: '制作中',
+    delivering: '配送中', completed: '已完成', cancelled: '已取消'
+  };
+  const STATUS_FLOW = ['new', 'paid', 'cooking', 'delivering', 'completed'];
+
+  function toggleAudio() {
+    audioEnabled = !audioEnabled;
+    document.getElementById('audioBtn').textContent = audioEnabled ? '🔊' : '🔇';
+    if (audioEnabled) newCount = parseInt(document.getElementById('newCount').textContent || '0');
+  }
+
+  function playNotify() {
+    if (!audioEnabled) return;
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      osc.type = 'sine'; osc.frequency.value = 880;
+      const gain = ctx.createGain(); gain.gain.value = 0.3;
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 0.6);
+    } catch(e) {}
+  }
+
+  async function refreshOrders() {
+    try {
+      const url = currentFilter ? `/api/orders?status=${currentFilter}` : '/api/orders';
+      const res = await fetch(url);
+      const data = await res.json();
+      orders = data.orders;
+
+      const all = data.orders;
+      document.getElementById('newCount').textContent = all.filter(o => o.status === 'new').length;
+      document.getElementById('paidCount').textContent = all.filter(o => o.status === 'paid').length;
+      document.getElementById('doingCount').textContent = all.filter(o => o.status === 'cooking' || o.status === 'delivering').length;
+
+      // Count today's orders
+      const today = new Date().toISOString().slice(0, 10);
+      document.getElementById('todayCount').textContent = all.filter(o => o.created_at && o.created_at.startsWith(today)).length;
+
+      // Check for new orders
+      const newOrderCount = all.filter(o => o.status === 'new').length;
+      if (newOrderCount > lastNewCount) playNotify();
+      lastNewCount = newOrderCount;
+
+      renderOrders();
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  function renderOrders() {
+    const container = document.getElementById('orderList');
+    if (orders.length === 0) {
+      container.innerHTML = '<div class="empty">📭 暂无订单</div>';
+      return;
+    }
+    container.innerHTML = orders.map(o => `
+      <div class="order-card ${o.status}" onclick="openDetail(${o.id})">
+        <div class="order-top">
+          <span class="order-no">#${o.order_no}</span>
+          <span class="order-status ${o.status}">${STATUS_MAP[o.status] || o.status}</span>
+        </div>
+        <div class="order-mid">
+          <span class="order-name">${o.customer_name}</span>
+          <span class="order-items">${o.items.map(i => i.name + '×' + i.qty).join('、')}</span>
+        </div>
+        <div class="order-bottom">
+          <span>🕐 ${new Date(o.created_at).toLocaleString('zh-CN', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}</span>
+          <span class="order-price">¥${o.total_price}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function setFilter(status) {
+    currentFilter = status;
+    document.querySelectorAll('.status-filter').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    refreshOrders();
+  }
+
+  function openDetail(id) {
+    selectedOrder = orders.find(o => o.id === id);
+    if (!selectedOrder) return;
+    const o = selectedOrder;
+
+    document.getElementById('detNo').textContent = o.order_no;
+    document.getElementById('detName').textContent = o.customer_name;
+    document.getElementById('detPhone').innerHTML = `<a href="tel:${o.phone}" style="color:#1976d2;">${o.phone}</a>`;
+    document.getElementById('detAddr').textContent = o.address;
+    document.getElementById('detNote').textContent = o.note || '无';
+    document.getElementById('detTotal').textContent = '¥' + o.total_price;
+
+    const itemsDiv = document.getElementById('detItems');
+    itemsDiv.innerHTML = '<div style="font-weight:bold;margin-bottom:6px;">商品明细：</div>' +
+      o.items.map(i => `<div class="detail-item"><span>${i.name}</span><span>×${i.qty}  ¥${i.price * i.qty}</span></div>`).join('');
+
+    const statusBtns = document.getElementById('statusBtns');
+    let currentIdx = STATUS_FLOW.indexOf(o.status);
+    if (currentIdx === -1) currentIdx = 0;
+    let buttons = '';
+    const labels = ['未处理', '确认收款', '开始制作', '开始配送', '完成订单'];
+    for (let i = 0; i < STATUS_FLOW.length; i++) {
+      const activeClass = o.status === STATUS_FLOW[i] ? ' active' : '';
+      buttons += `<button class="status-btn${activeClass}" onclick="updateStatus('${STATUS_FLOW[i]}')">${labels[i]}</button>`;
+    }
+    buttons += `<button class="status-btn" style="background:#f5f5f5;color:#999;" onclick="updateStatus('cancelled')">取消订单</button>`;
+    statusBtns.innerHTML = buttons;
+
+    document.getElementById('detailModal').classList.add('open');
+  }
+
+  function closeDetail() {
+    document.getElementById('detailModal').classList.remove('open');
+    selectedOrder = null;
+  }
+
+  async function updateStatus(status) {
+    if (!selectedOrder) return;
+    try {
+      const res = await fetch(`/api/order/${selectedOrder.order_no}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      });
+      if (res.ok) {
+        selectedOrder.status = status;
+        refreshOrders();
+        openDetail(selectedOrder.id); // refresh detail modal
+      }
+    } catch(e) { console.error(e); }
+  }
+
+  // Auto refresh
+  refreshOrders();
+  setInterval(refreshOrders, 8000);
+</script>
+</body>
+</html>
